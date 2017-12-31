@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
+
 import { Game, Group, Sprite, CursorKeys, Text } from 'phaser-ce';
+import { Player } from './../game/player';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +11,7 @@ import { Game, Group, Sprite, CursorKeys, Text } from 'phaser-ce';
 export class AppComponent {
 
   protected game: Game;
-  protected player: Sprite;
+  protected player: Player;
   protected stars: Group;
   protected platforms: Group;
   protected cursors: CursorKeys;
@@ -26,7 +28,6 @@ export class AppComponent {
   }
 
   preload() {
-
     this.game.load.image('sky', 'assets/sky.png');
     this.game.load.image('ground', 'assets/platform.png');
     this.game.load.image('star', 'assets/star.png');
@@ -59,25 +60,8 @@ export class AppComponent {
 
 
 
-    // The player and its settings
-    let player = this.game.add.sprite(32, this.game.world.height - 150, 'dude');
-    this.player = player;
-
-    //  We need to enable physics on the player
-    this.game.physics.arcade.enable(player);
-
-    //  Player physics properties. Give the little guy a slight bounce.
-    player.body.bounce.y = 0.2;
-    player.body.gravity.y = 1000;
-    player.body.collideWorldBounds = true;
-
-    //  Our two animations, walking left and right.
-    player.animations.add('left', [0, 1, 2, 3], 10, true);
-    player.animations.add('right', [5, 6, 7, 8], 10, true);
-
-
     this.cursors = this.game.input.keyboard.createCursorKeys();
-
+    this.player = new Player(this.game);
 
 
     let stars = this.game.add.group();
@@ -102,35 +86,22 @@ export class AppComponent {
 
   update() {
     this.game.physics.arcade.collide(this.stars, this.platforms);
-    let hitPlatform = this.game.physics.arcade.collide(this.player, this.platforms);
+    let hitPlatform = this.game.physics.arcade.collide(this.player.sprite, this.platforms);
 
-    this.game.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this);
+    this.game.physics.arcade.overlap(this.player.sprite, this.stars, this.collectStar, null, this);
 
-
-    //  Reset the players velocity (movement)
-    this.player.body.velocity.x = 0;
 
     if (this.cursors.left.isDown) {
-      //  Move to the left
-      this.player.body.velocity.x = -250;
-
-      this.player.animations.play('left');
+      this.player.moveLeft();
     } else if (this.cursors.right.isDown) {
-      //  Move to the right
-      this.player.body.velocity.x = 250;
-
-      this.player.animations.play('right');
+      this.player.moveRight();
     } else {
-      //  Stand still
-      this.player.animations.stop();
-
-      this.player.frame = 4;
+      this.player.idle();
     }
 
     //  Allow the this.player to jump if they are touching the ground.
-    if (this.cursors.up.isDown && this.player.body.touching.down && hitPlatform) {
-      this.player.body.velocity.y = -350;
-
+    if (this.cursors.up.isDown && this.player.sprite.body.touching.down && hitPlatform) {
+      this.player.jump();
     }
   }
 
