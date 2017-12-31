@@ -1,3 +1,4 @@
+import { ScoreService } from './../services/score.service';
 import { Group, Game, Sprite } from 'phaser-ce';
 
 import { Player } from './player';
@@ -8,7 +9,7 @@ export class Level {
   protected platforms: Group;
   protected stars: Group;
 
-  constructor(protected game: Game, protected player: Player, protected pointsHandler: Function) {
+  constructor(protected game: Game, protected player: Player, protected scoreService: ScoreService) {
     this.setupSky();
     this.setupPlatforms();
     this.setupStars();
@@ -53,6 +54,6 @@ export class Level {
 
   protected collectStar(player: Sprite, star: Sprite) {
     star.kill();
-    this.pointsHandler(+10);
+    this.scoreService.eatStar();
   }
 }
