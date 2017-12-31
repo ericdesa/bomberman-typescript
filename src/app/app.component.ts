@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 
 import { Game, Group, Sprite, CursorKeys, Text } from 'phaser-ce';
+import { AssetName } from './../game/assets';
 import { Player } from './../game/player';
+import { Assets } from '../game/assets';
 
 @Component({
   selector: 'app-root',
@@ -21,25 +23,17 @@ export class AppComponent {
 
   constructor() {
     this.game = new Game(800, 600, Phaser.AUTO, '', {
-      preload: this.preload.bind(this),
+      preload: Assets.preload,
       create: this.create.bind(this),
       update: this.update.bind(this)
     });
   }
-
-  preload() {
-    this.game.load.image('sky', 'assets/sky.png');
-    this.game.load.image('ground', 'assets/platform.png');
-    this.game.load.image('star', 'assets/star.png');
-    this.game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
-  }
-
   create() {
     //  We're going to be using physics, so enable the Arcade Physics system
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
     //  A simple background for our game
-    this.game.add.sprite(0, 0, 'sky');
+    this.game.add.sprite(0, 0, AssetName.sky);
 
     //  The platforms group contains the ground and the 2 ledges we can jump on
     let platforms = this.game.add.group();
@@ -47,15 +41,15 @@ export class AppComponent {
     platforms.enableBody = true;
 
     // Here we create the ground.
-    let ground = platforms.create(0, this.game.world.height - 64, 'ground');
+    let ground = platforms.create(0, this.game.world.height - 64, AssetName.ground);
     ground.scale.setTo(2, 2);
     ground.body.immovable = true;
 
     //  Now let's create two ledges
-    let ledge1 = platforms.create(400, 400, 'ground');
+    let ledge1 = platforms.create(400, 400, AssetName.ground);
     ledge1.body.immovable = true;
 
-    let ledge2 = platforms.create(-150, 250, 'ground');
+    let ledge2 = platforms.create(-150, 250, AssetName.ground);
     ledge2.body.immovable = true;
 
 
@@ -72,7 +66,7 @@ export class AppComponent {
     //  Here we'll create 12 of them evenly spaced apart
     for (let i = 0; i < 12; i++) {
       //  Create a star inside of the 'stars' group
-      let star = stars.create(i * 70, 0, 'star');
+      let star = stars.create(i * 70, 0, AssetName.star);
 
       //  Let gravity do its thing
       star.body.gravity.y = 600;
@@ -106,7 +100,6 @@ export class AppComponent {
   }
 
   protected collectStar(player: Sprite, star: Sprite) {
-    console.log('coucoc');
     star.kill();
     this.score += 10;
     this.scoreText.text = `score: ${this.score}`;

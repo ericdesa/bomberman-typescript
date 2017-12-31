@@ -1,4 +1,5 @@
 import { Game, Sprite } from 'phaser-ce';
+import { AssetName } from './assets';
 
 export class Player {
 
@@ -11,7 +12,7 @@ export class Player {
   }
 
   protected setupSprite() {
-    this.sprite = this.game.add.sprite(32, this.game.world.height - 150, 'dude');
+    this.sprite = this.game.add.sprite(32, this.game.world.height - 150, AssetName.dude);
   }
 
   protected setupPhysics() {
