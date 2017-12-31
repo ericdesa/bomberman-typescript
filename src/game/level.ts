@@ -9,11 +9,11 @@ export class Level {
   protected platforms: Group;
   protected stars: Group;
 
-  constructor(protected game: Game, protected player: Player, protected scoreService: ScoreService) {
+  constructor(protected game: Game, public player: Player, protected scoreService: ScoreService) {
     this.setupSky();
     this.setupPlatforms();
     this.setupStars();
-    this.player.sprite.bringToTop();
+    this.setupPlayer();
   }
 
   protected setupSky() {
@@ -44,6 +44,11 @@ export class Level {
       star.body.gravity.y = 600;
       star.body.bounce.y = 0.1 + Math.random() * 0.2;
     }
+  }
+
+  protected setupPlayer() {
+    this.player.sprite.bringToTop();
+    this.player.level = this; // TODO: refactor spagetti code
   }
 
   public update() {

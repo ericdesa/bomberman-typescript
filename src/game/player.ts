@@ -1,11 +1,17 @@
 import { Game, Sprite } from 'phaser-ce';
+
 import { AssetName } from './assets';
+import { Bomb } from './bomb';
+import { Level } from './level';
 
 export class Player {
 
   public sprite: Sprite;
   protected idleDirectionFrame = 1;
   protected speed = 120;
+
+  public bombs = 5;
+  public level: Level;
 
   constructor(protected game: Game) {
     this.setupSprite();
@@ -61,6 +67,16 @@ export class Player {
     this.stopMovement();
     this.sprite.animations.stop();
     this.sprite.frame = this.idleDirectionFrame;
+  }
+
+  public dropBomb() {
+    if (this.bombs > 0) {
+      this.bombs--;
+      setTimeout(() => this.bombs++, 5000);
+
+      let _ = new Bomb(this.game, this.level);
+      this.sprite.bringToTop();
+    }
   }
 
   protected stopMovement() {
