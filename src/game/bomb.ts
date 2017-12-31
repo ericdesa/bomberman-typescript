@@ -24,12 +24,14 @@ export class Bomb {
   public x: number;
   public y: number;
 
+  protected timeoutId: any;
+
   constructor(position: Point, protected bombGroup: Group, protected explostionGroup: Group, protected radius: number = 1) {
     this.x = Math.round(position.x / GRID_SIZE) * GRID_SIZE;
     this.y = Math.round(position.y / GRID_SIZE) * GRID_SIZE;
 
     this.setupSprite();
-    this.explodeAfter(3000);
+    this.explode(3000);
   }
 
   protected setupSprite() {
@@ -37,10 +39,13 @@ export class Bomb {
     this.sprite.animations.add('timing', [0, 1, 2], 5, true);
     this.sprite.animations.play('timing');
     this.sprite.body.immovable = true;
+    this.sprite.data = this;
   }
 
-  protected explodeAfter(delay: number) {
-    setTimeout(() => {
+  protected explode(delay: number = 0) {
+    if (this.timeoutId) clearTimeout(this.timeoutId);
+
+    this.timeoutId = setTimeout(() => {
 
       // bomb
       this.sprite.kill();

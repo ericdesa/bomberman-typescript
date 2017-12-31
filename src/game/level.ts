@@ -72,13 +72,16 @@ export class Level {
     this.game.physics.arcade.collide(this.player.sprite, this.bombs);
     this.game.physics.arcade.overlap(this.player.sprite, this.stars, this.collectStar, null, this);
     this.game.physics.arcade.overlap(this.player.sprite, this.explosions, this.playerDie, null, this);
+    this.game.physics.arcade.overlap(this.explosions, this.bombs, this.explodeBomb, null, this);
     this.player.sprite.bringToTop();
   }
 
   protected playerDie(player: Sprite, explosion: Sprite) {
-    debugger
     this.player.die();
   }
+
+  protected explodeBomb(explostion: Sprite, bomb: Sprite) {
+    bomb.data.explode();
   }
 
   protected collectStar(player: Sprite, star: Sprite) {
