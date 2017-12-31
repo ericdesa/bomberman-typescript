@@ -14,17 +14,12 @@ export class Controls {
       this.player.moveLeft();
     } else if (this.cursors.right.isDown) {
       this.player.moveRight();
+    } else if (this.cursors.up.isDown) {
+      this.player.moveUp();
+    } else if (this.cursors.down.isDown) {
+      this.player.moveDown();
     } else {
       this.player.idle();
     }
-
-    if (this.cursors.up.isDown && this.playerCanJump()) {
-      this.player.jump();
-    }
-  }
-
-  protected playerCanJump() {
-    let isTouchingDown = this.player.sprite.body.touching.down;
-    return isTouchingDown;
   }
 }

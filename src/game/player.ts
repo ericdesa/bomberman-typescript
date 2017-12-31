@@ -4,6 +4,8 @@ import { AssetName } from './assets';
 export class Player {
 
   public sprite: Sprite;
+  protected idleDirectionFrame = 1;
+  protected speed = 120;
 
   constructor(protected game: Game) {
     this.setupSprite();
@@ -12,38 +14,57 @@ export class Player {
   }
 
   protected setupSprite() {
-    this.sprite = this.game.add.sprite(32, this.game.world.height - 150, AssetName.dude);
+    this.sprite = this.game.add.sprite(32, this.game.world.height - 150, AssetName.player);
   }
 
   protected setupPhysics() {
     this.game.physics.arcade.enable(this.sprite);
-    this.sprite.body.bounce.y = 0.2;
-    this.sprite.body.gravity.y = 1000;
     this.sprite.body.collideWorldBounds = true;
   }
 
   protected setupAnimation() {
-    this.sprite.animations.add('left', [0, 1, 2, 3], 10, true);
-    this.sprite.animations.add('right', [5, 6, 7, 8], 10, true);
+    this.sprite.animations.add('down', [0, 1, 2], 5, true);
+    this.sprite.animations.add('left', [3, 4, 5], 5, true);
+    this.sprite.animations.add('right', [6, 7, 8], 5, true);
+    this.sprite.animations.add('up', [9, 10, 11], 5, true);
   }
 
   public moveLeft() {
-    this.sprite.body.velocity.x = -250;
+    this.stopMovement();
+    this.sprite.body.velocity.x = -this.speed;
     this.sprite.animations.play('left');
+    this.idleDirectionFrame = 4;
   }
 
   public moveRight() {
-    this.sprite.body.velocity.x = 250;
+    this.stopMovement();
+    this.sprite.body.velocity.x = this.speed;
     this.sprite.animations.play('right');
+    this.idleDirectionFrame = 7;
   }
 
-  public jump() {
-    this.sprite.body.velocity.y = -350;
+  public moveUp() {
+    this.stopMovement();
+    this.sprite.body.velocity.y = -this.speed;
+    this.sprite.animations.play('up');
+    this.idleDirectionFrame = 10;
+  }
+
+  public moveDown() {
+    this.stopMovement();
+    this.sprite.body.velocity.y = this.speed;
+    this.sprite.animations.play('down');
+    this.idleDirectionFrame = 1;
   }
 
   public idle() {
-    this.sprite.body.velocity.x = 0;
+    this.stopMovement();
     this.sprite.animations.stop();
-    this.sprite.frame = 4;
+    this.sprite.frame = this.idleDirectionFrame;
+  }
+
+  protected stopMovement() {
+    this.sprite.body.velocity.x = 0;
+    this.sprite.body.velocity.y = 0;
   }
 }
