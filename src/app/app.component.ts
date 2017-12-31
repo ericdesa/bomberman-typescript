@@ -36,8 +36,8 @@ export class AppComponent {
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
     this.player = new Player(this.game);
-    this.controls = new Controls(this.game, this.player);
     this.level = new Level(this.game, this.player, this.scoreService);
+    this.controls = new Controls(this.game, this.level);
     this.gui = new GUI(this.game, this.scoreService);
   }
 

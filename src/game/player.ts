@@ -6,12 +6,12 @@ import { Level } from './level';
 
 export class Player {
 
+  public isAlive = true;
   public sprite: Sprite;
   protected idleDirectionFrame = 1;
   protected speed = 120;
 
   public bombs = 5;
-  public level: Level;
 
   constructor(protected game: Game) {
     this.setupSprite();
@@ -33,9 +33,11 @@ export class Player {
     this.sprite.animations.add('left', [3, 4, 5], 5, true);
     this.sprite.animations.add('right', [6, 7, 8], 5, true);
     this.sprite.animations.add('up', [9, 10, 11], 5, true);
+    this.sprite.animations.add('die', [16, 17, 19], 5, false);
   }
 
   public moveLeft() {
+    if (!this.isAlive) return;
     this.stopMovement();
     this.sprite.body.velocity.x = -this.speed;
     this.sprite.animations.play('left');
@@ -43,6 +45,7 @@ export class Player {
   }
 
   public moveRight() {
+    if (!this.isAlive) return;
     this.stopMovement();
     this.sprite.body.velocity.x = this.speed;
     this.sprite.animations.play('right');
@@ -50,6 +53,7 @@ export class Player {
   }
 
   public moveUp() {
+    if (!this.isAlive) return;
     this.stopMovement();
     this.sprite.body.velocity.y = -this.speed;
     this.sprite.animations.play('up');
@@ -57,6 +61,7 @@ export class Player {
   }
 
   public moveDown() {
+    if (!this.isAlive) return;
     this.stopMovement();
     this.sprite.body.velocity.y = this.speed;
     this.sprite.animations.play('down');
@@ -64,19 +69,17 @@ export class Player {
   }
 
   public idle() {
+    if (!this.isAlive) return;
     this.stopMovement();
     this.sprite.animations.stop();
     this.sprite.frame = this.idleDirectionFrame;
   }
 
-  public dropBomb() {
-    if (this.bombs > 0) {
-      this.bombs--;
-      setTimeout(() => this.bombs++, 5000);
-
-      let _ = new Bomb(this.game, this.level);
-      this.sprite.bringToTop();
-    }
+  public die() {
+    if (!this.isAlive) return;
+    this.isAlive = false;
+    this.stopMovement();
+    this.sprite.animations.play('die');
   }
 
   protected stopMovement() {

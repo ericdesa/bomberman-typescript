@@ -3,17 +3,20 @@ import { Group, Game, Sprite } from 'phaser-ce';
 
 import { Player } from './player';
 import { AssetName } from './assets';
+import { Bomb } from './bomb';
 
 export class Level {
 
   protected platforms: Group;
   protected stars: Group;
+  protected bombs: Group;
+  protected explosions: Group;
 
   constructor(protected game: Game, public player: Player, protected scoreService: ScoreService) {
     this.setupSky();
     this.setupPlatforms();
     this.setupStars();
-    this.setupPlayer();
+    this.setupBombs();
   }
 
   protected setupSky() {
@@ -46,15 +49,36 @@ export class Level {
     }
   }
 
-  protected setupPlayer() {
-    this.player.sprite.bringToTop();
-    this.player.level = this; // TODO: refactor spagetti code
+  protected setupBombs() {
+    this.bombs = this.game.add.group();
+    this.bombs.enableBody = true;
+
+    this.explosions = this.game.add.group();
+    this.explosions.enableBody = true;
+  }
+
+  public dropBomb() {
+    if (this.player.bombs > 0) {
+      this.player.bombs--;
+      setTimeout(() => this.player.bombs++, 5000);
+
+      let _ = new Bomb(this.player.sprite.position, this.bombs, this.explosions);
+    }
   }
 
   public update() {
     this.game.physics.arcade.collide(this.stars, this.platforms);
     this.game.physics.arcade.collide(this.player.sprite, this.platforms);
+    this.game.physics.arcade.collide(this.player.sprite, this.bombs);
     this.game.physics.arcade.overlap(this.player.sprite, this.stars, this.collectStar, null, this);
+    this.game.physics.arcade.overlap(this.player.sprite, this.explosions, this.playerDie, null, this);
+    this.player.sprite.bringToTop();
+  }
+
+  protected playerDie(player: Sprite, explosion: Sprite) {
+    debugger
+    this.player.die();
+  }
   }
 
   protected collectStar(player: Sprite, star: Sprite) {

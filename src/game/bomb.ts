@@ -1,4 +1,4 @@
-import { Sprite, Game } from 'phaser-ce';
+import { Sprite, Game, Point, Group } from 'phaser-ce';
 
 import { Level } from './level';
 import { AssetName } from './assets';
@@ -20,64 +20,63 @@ const GRID_SIZE = 32;
 
 export class Bomb {
 
-  protected sprite: Sprite;
+  public sprite: Sprite;
+  public x: number;
+  public y: number;
 
-  constructor(protected game: Game, protected level: Level, protected radius: number = 1) {
+  constructor(position: Point, protected bombGroup: Group, protected explostionGroup: Group, protected radius: number = 1) {
+    this.x = Math.round(position.x / GRID_SIZE) * GRID_SIZE;
+    this.y = Math.round(position.y / GRID_SIZE) * GRID_SIZE;
+
     this.setupSprite();
     this.explodeAfter(3000);
   }
 
   protected setupSprite() {
-    let x = Math.round(this.level.player.sprite.centerX / GRID_SIZE) * GRID_SIZE;
-    let y = Math.round(this.level.player.sprite.centerY / GRID_SIZE) * GRID_SIZE;
-
-    this.sprite = this.game.add.sprite(x, y, AssetName.bomb);
+    this.sprite = this.bombGroup.create(this.x, this.y, AssetName.bomb);
     this.sprite.animations.add('timing', [0, 1, 2], 5, true);
     this.sprite.animations.play('timing');
+    this.sprite.body.immovable = true;
   }
 
   protected explodeAfter(delay: number) {
     setTimeout(() => {
 
-      // position
-      let x = Math.round(this.sprite.position.x / GRID_SIZE) * GRID_SIZE;
-      let y = Math.round(this.sprite.position.y / GRID_SIZE) * GRID_SIZE;
-
       // bomb
       this.sprite.kill();
 
       // center
-      this.addExplositionSprite(x, y, ExplostionFrameLine.center);
+      this.addExplositionSprite(this.x, this.y, ExplostionFrameLine.center);
 
       // latitude
-      for (let xSprite = -this.radius; xSprite <= this.radius; xSprite++) {
+      for (let dx = -this.radius; dx <= this.radius; dx++) {
         let frameLine: ExplostionFrameLine;
 
-        if (xSprite === -this.radius) { frameLine = ExplostionFrameLine.leftEnd; }
-        else if (xSprite < 0) { frameLine = ExplostionFrameLine.leftMiddle; }
-        else if (xSprite === this.radius) { frameLine = ExplostionFrameLine.rightEnd; }
-        else if (xSprite > 0) { frameLine = ExplostionFrameLine.rightMiddle; }
+        if (dx === -this.radius) { frameLine = ExplostionFrameLine.leftEnd; }
+        else if (dx < 0) { frameLine = ExplostionFrameLine.leftMiddle; }
+        else if (dx === this.radius) { frameLine = ExplostionFrameLine.rightEnd; }
+        else if (dx > 0) { frameLine = ExplostionFrameLine.rightMiddle; }
 
-        if (frameLine !== undefined) { this.addExplositionSprite(x + xSprite * GRID_SIZE, y, frameLine); }
+        if (frameLine !== undefined) { this.addExplositionSprite(this.x + dx * GRID_SIZE, this.y, frameLine); }
       }
 
       // longitude
-      for (let ySprite = -this.radius; ySprite <= this.radius; ySprite++) {
+      for (let dy = -this.radius; dy <= this.radius; dy++) {
         let frameLine: ExplostionFrameLine;
 
-        if (ySprite === -this.radius) { frameLine = ExplostionFrameLine.upEnd; }
-        else if (ySprite < 0) { frameLine = ExplostionFrameLine.upMiddle; }
-        else if (ySprite === this.radius) { frameLine = ExplostionFrameLine.bottomEnd; }
-        else if (ySprite > 0) { frameLine = ExplostionFrameLine.bottomMiddle; }
+        if (dy === -this.radius) { frameLine = ExplostionFrameLine.upEnd; }
+        else if (dy < 0) { frameLine = ExplostionFrameLine.upMiddle; }
+        else if (dy === this.radius) { frameLine = ExplostionFrameLine.bottomEnd; }
+        else if (dy > 0) { frameLine = ExplostionFrameLine.bottomMiddle; }
 
-        if (frameLine !== undefined) { this.addExplositionSprite(x, y + ySprite * GRID_SIZE, frameLine); }
+        if (frameLine !== undefined) { this.addExplositionSprite(this.x, this.y + dy * GRID_SIZE, frameLine); }
       }
     }, delay);
 
   }
 
   protected addExplositionSprite(x: number, y: number, frameLine: ExplostionFrameLine) {
-    let explosion = this.game.add.sprite(x, y, AssetName.explosion);
+    let explosion = this.explostionGroup.create(x, y, AssetName.explosion);
 
     const NB_STEPS = 5;
     let frames = Array(NB_STEPS)
