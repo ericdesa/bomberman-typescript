@@ -1,3 +1,4 @@
+import { Controls } from './../game/controls';
 import { Component } from '@angular/core';
 
 import { Game, Group, Sprite, CursorKeys, Text } from 'phaser-ce';
@@ -14,9 +15,10 @@ export class AppComponent {
 
   protected game: Game;
   protected player: Player;
+  protected controls: Controls;
+
   protected stars: Group;
   protected platforms: Group;
-  protected cursors: CursorKeys;
 
   protected score = 0;
   protected scoreText: Text;
@@ -28,6 +30,7 @@ export class AppComponent {
       update: this.update.bind(this)
     });
   }
+
   create() {
     //  We're going to be using physics, so enable the Arcade Physics system
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -52,11 +55,8 @@ export class AppComponent {
     let ledge2 = platforms.create(-150, 250, AssetName.ground);
     ledge2.body.immovable = true;
 
-
-
-    this.cursors = this.game.input.keyboard.createCursorKeys();
     this.player = new Player(this.game);
-
+    this.controls = new Controls(this.game, this.player);
 
     let stars = this.game.add.group();
     this.stars = stars;
@@ -80,23 +80,9 @@ export class AppComponent {
 
   update() {
     this.game.physics.arcade.collide(this.stars, this.platforms);
-    let hitPlatform = this.game.physics.arcade.collide(this.player.sprite, this.platforms);
-
+    this.game.physics.arcade.collide(this.player.sprite, this.platforms);
     this.game.physics.arcade.overlap(this.player.sprite, this.stars, this.collectStar, null, this);
-
-
-    if (this.cursors.left.isDown) {
-      this.player.moveLeft();
-    } else if (this.cursors.right.isDown) {
-      this.player.moveRight();
-    } else {
-      this.player.idle();
-    }
-
-    //  Allow the this.player to jump if they are touching the ground.
-    if (this.cursors.up.isDown && this.player.sprite.body.touching.down && hitPlatform) {
-      this.player.jump();
-    }
+    this.controls.update();
   }
 
   protected collectStar(player: Sprite, star: Sprite) {
