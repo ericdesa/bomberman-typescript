@@ -7,6 +7,7 @@ export enum AssetName {
   player = 'player',
   bomb = 'bomb',
   explosion = 'explosion',
+  obstacle = 'obstacle',
 }
 
 export class Assets {
@@ -18,6 +19,7 @@ export class Assets {
     game.load.spritesheet(AssetName.player, 'assets/player.png', 35, 56);
     game.load.spritesheet(AssetName.bomb, 'assets/bomb.png', 34, 34);
     game.load.spritesheet(AssetName.explosion, 'assets/explosion.png', 34, 32);
+    game.load.spritesheet(AssetName.obstacle, 'assets/obstacle.png', 32, 32);
   }
 
 }

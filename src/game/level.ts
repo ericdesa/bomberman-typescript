@@ -4,19 +4,20 @@ import { Group, Game, Sprite } from 'phaser-ce';
 import { Player } from './player';
 import { AssetName } from './assets';
 import { Bomb } from './bomb';
+import { Obstacle } from './obstacle';
 
 export class Level {
 
   protected platforms: Group;
-  protected stars: Group;
   protected bombs: Group;
+  protected obstacles: Group;
   protected explosions: Group;
 
   constructor(protected game: Game, public player: Player, protected scoreService: ScoreService) {
     this.setupSky();
     this.setupPlatforms();
-    this.setupStars();
     this.setupBombs();
+    this.setupObstacles();
   }
 
   protected setupSky() {
@@ -38,23 +39,21 @@ export class Level {
     ledge2.body.immovable = true;
   }
 
-  protected setupStars() {
-    this.stars = this.game.add.group();
-    this.stars.enableBody = true;
-
-    for (let i = 0; i < 12; i++) {
-      let star = this.stars.create(i * 70, 0, AssetName.star);
-      star.body.gravity.y = 600;
-      star.body.bounce.y = 0.1 + Math.random() * 0.2;
-    }
-  }
-
   protected setupBombs() {
     this.bombs = this.game.add.group();
     this.bombs.enableBody = true;
 
     this.explosions = this.game.add.group();
     this.explosions.enableBody = true;
+  }
+
+  protected setupObstacles() {
+    this.obstacles = this.game.add.group();
+    this.obstacles.enableBody = true;
+
+    for (let i = 0; i < 12; i++) {
+      let _ = new Obstacle(this.obstacles);
+    }
   }
 
   public dropBomb() {
@@ -67,12 +66,12 @@ export class Level {
   }
 
   public update() {
-    this.game.physics.arcade.collide(this.stars, this.platforms);
+    this.game.physics.arcade.collide(this.player.sprite, this.obstacles);
     this.game.physics.arcade.collide(this.player.sprite, this.platforms);
     this.game.physics.arcade.collide(this.player.sprite, this.bombs);
-    this.game.physics.arcade.overlap(this.player.sprite, this.stars, this.collectStar, null, this);
     this.game.physics.arcade.overlap(this.player.sprite, this.explosions, this.playerDie, null, this);
     this.game.physics.arcade.overlap(this.explosions, this.bombs, this.explodeBomb, null, this);
+    this.game.physics.arcade.overlap(this.explosions, this.obstacles, this.destroyObstacle, null, this);
     this.player.sprite.bringToTop();
   }
 
@@ -84,8 +83,7 @@ export class Level {
     bomb.data.explode();
   }
 
-  protected collectStar(player: Sprite, star: Sprite) {
-    star.kill();
-    this.scoreService.eatStar();
+  protected destroyObstacle(player: Sprite, obstacle: Sprite) {
+    obstacle.kill();
   }
 }
