@@ -8,7 +8,6 @@ export class ScoreService {
   set score(value: number) {
     this._score = value;
     this.scoreChange.emit(value);
-    console.log('emit', value);
   }
 
   get score(): number {

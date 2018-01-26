@@ -81,7 +81,7 @@ export class Bomb {
   }
 
   protected addExplositionSprite(x: number, y: number, frameLine: ExplostionFrameLine) {
-    let explosion = this.explostionGroup.create(x, y, AssetName.explosion);
+    let explosion: Sprite = this.explostionGroup.create(x, y, AssetName.explosion);
 
     const NB_STEPS = 5;
     let frames = Array(NB_STEPS)
