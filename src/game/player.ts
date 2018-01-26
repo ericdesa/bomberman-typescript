@@ -26,6 +26,7 @@ export class Player {
   protected setupPhysics() {
     this.game.physics.arcade.enable(this.sprite);
     this.sprite.body.collideWorldBounds = true;
+    this.sprite.body.setSize(32, 25, 0, 32);
   }
 
   protected setupAnimation() {
