@@ -1,58 +1,63 @@
 import { createServer, Server } from 'http';
+
 import * as express from 'express';
 import * as socketIo from 'socket.io';
-import { Message } from './index';
+import { Socket } from 'net';
 
+// import { Player } from './models/player';
+import { Party } from './models/party';
+
+// const EventNewPlayer = 'NewPlayer';
+const EventRemovePlayer = 'RemovePlayer';
+
+const EventMovePlayer = 'MovePlayer';
+const EventDropBomb = 'DropBomb';
+
+const EventParty = 'Party';
 
 export class ChatServer {
-    public static readonly PORT: number = 8080;
-    private app: express.Application;
-    private server: Server;
-    private io: SocketIO.Server;
-    private port: string | number;
+    protected app: express.Application;
+    protected server: Server;
+    protected io: SocketIO.Server;
+    protected port = 8080;
+
+    protected party = new Party();
 
     constructor() {
-        this.createApp();
-        this.config();
-        this.createServer();
-        this.sockets();
+        this.app = express();
+        this.server = createServer(this.app);
+        this.io = socketIo(this.server);
         this.listen();
     }
 
-    private createApp(): void {
-        this.app = express();
-    }
-
-    private createServer(): void {
-        this.server = createServer(this.app);
-    }
-
-    private config(): void {
-        this.port = process.env.PORT || ChatServer.PORT;
-    }
-
-    private sockets(): void {
-        this.io = socketIo(this.server);
-    }
-
-    private listen(): void {
+    protected listen(): void {
         this.server.listen(this.port, () => {
             console.log('Running server on port %s', this.port);
         });
 
-        this.io.on('connect', (socket: any) => {
-            console.log('Connected client on port %s.', this.port);
-            console.log('emmit plop');
-            this.io.emit('message', 'plop');
+        this.io.on('connect', (socket: Socket) => {
+            let player = this.party.addPlayer(socket);
+            console.log(player);
+            this.io.emit(EventParty, this.party);
+        });
 
-            socket.on('message', (m: Message) => {
-                this.io.emit('message', m);
-                console.log('[server](message): %s', JSON.stringify(m));
-            });
+        this.io.on(EventMovePlayer, (message: any) => {
+            console.log(EventMovePlayer);
+            this.io.emit(EventMovePlayer, message);
+        });
 
-            socket.on('disconnect', () => {
-                console.log('Client disconnected');
-            });
+        this.io.on(EventDropBomb, (message: any) => {
+            console.log(EventDropBomb);
+            this.io.emit(EventDropBomb, message);
+        });
+
+        this.io.on(EventRemovePlayer, (message: any) => {
+            console.log(EventRemovePlayer);
+            this.io.emit(EventRemovePlayer, message);
+        });
+
+        this.io.on('disconnect', () => {
+            console.log('Client disconnected');
         });
     }
 

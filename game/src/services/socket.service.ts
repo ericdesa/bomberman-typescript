@@ -29,7 +29,7 @@ export class SocketService {
 
   public onMessage(): Observable<string> {
     return new Observable<string>(observer => {
-      this.ioConnection.on('message', (data: string) => observer.next(data));
+      this.ioConnection.on('Party', (data: string) => observer.next(data));
     });
   }
 
