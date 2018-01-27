@@ -28,7 +28,7 @@ export class Bomb {
 
   constructor(position: Point, protected bombGroup: Group, protected explostionGroup: Group, protected radius: number = 1) {
     this.x = Math.round(position.x / GRID_SIZE) * GRID_SIZE;
-    this.y = Math.round(position.y / GRID_SIZE) * GRID_SIZE;
+    this.y = (Math.round(position.y / GRID_SIZE) * GRID_SIZE) + 25;
 
     this.setupSprite();
     this.explode(3000);
