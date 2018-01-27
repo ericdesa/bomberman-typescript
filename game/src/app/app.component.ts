@@ -9,6 +9,7 @@ import { Level } from '../game/level';
 import { Player } from './../game/player';
 
 import { ScoreService } from '../services/score.service';
+import { SocketService } from '../services/socket.service';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +25,7 @@ export class AppComponent {
   protected level: Level;
   protected gui: GUI;
 
-  constructor(protected scoreService: ScoreService) {
+  constructor(protected scoreService: ScoreService, public socketService: SocketService) {
     this.game = new Game(800, 600, Phaser.AUTO, '', {
       preload: Assets.preload,
       create: this.create.bind(this),
