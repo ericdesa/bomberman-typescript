@@ -1,21 +1,56 @@
+import { Group, Game, Sprite, TilemapLayer } from 'phaser-ce';
+
 import { ScoreService } from './../services/score.service';
-import { Group, Game, Sprite } from 'phaser-ce';
 
 import { Player } from './player';
 import { AssetName } from './assets';
 import { Bomb } from './bomb';
 import { Obstacle } from './obstacle';
 
+enum TileLevel {
+  BORDER_TOP_LEFT_1 = 0,
+  BORDER_TOP_LEFT_2,
+  BORDER_TOP_EVEN,
+  BORDER_TOP_OVEN,
+  BORDER_TOP_RIGHT_2,
+  BORDER_TOP_RIGHT_1,
+  BUILDING,
+  BORDER_LEFT_EVEN_1,
+  BORDER_LEFT_EVEN_2,
+  EMPTY_1,
+  EMPTY_2,
+  BORDER_RIGHT_EVEN_2,
+  BORDER_RIGHT_EVEN_1,
+  FLOOR_TOP,
+  BORDER_LEFT_OVEN_1,
+  BORDER_LEFT_OVEN_2,
+  EMPTY_3,
+  EMPTY_4,
+  BORDER_RIGHT_OVEN_2,
+  BORDER_RIGHT_OVEN_1,
+  FLOOR_MIDDLE,
+  BORDER_BOTTOM_LEFT_1,
+  BORDER_BOTTOM_LEFT_2,
+  BORDER_BOTTOM_EVEN,
+  BORDER_BOTTOM_OVEN,
+  BORDER_BOTTOM_RIGHT_1,
+  BORDER_BOTTOM_RIGHT_2,
+}
+
+const NB_X_TILES = 25;
+const NB_Y_TILES = 19;
+const TILE_SIZE = 32;
+
 export class Level {
 
-  protected platforms: Group;
   protected bombs: Group;
   protected obstacles: Group;
   protected explosions: Group;
+  protected wallLayer: TilemapLayer;
 
   constructor(protected game: Game, public player: Player, protected scoreService: ScoreService) {
     this.setupSky();
-    this.setupPlatforms();
+    this.setupWall();
     this.setupBombs();
     this.setupObstacles();
   }
@@ -24,19 +59,83 @@ export class Level {
     this.game.add.sprite(0, 0, AssetName.sky);
   }
 
-  protected setupPlatforms() {
-    this.platforms = this.game.add.group();
-    this.platforms.enableBody = true;
+  protected setupWall() {
+    let map = this.game.add.tilemap();
+    map.addTilesetImage(AssetName.ground);
+    let wallLayer = map.create('walls', NB_X_TILES, NB_Y_TILES, TILE_SIZE, TILE_SIZE);
+    wallLayer.debug = true;
 
-    let ground = this.platforms.create(0, this.game.world.height - 64, AssetName.ground);
-    ground.scale.setTo(2, 2);
-    ground.body.immovable = true;
+    // collisions
+    map.setCollisionBetween(0, Object.keys(TileLevel).length, true, wallLayer);
+    [
+      TileLevel.EMPTY_1, TileLevel.EMPTY_2, TileLevel.FLOOR_TOP,
+      TileLevel.EMPTY_3, TileLevel.EMPTY_4, TileLevel.FLOOR_MIDDLE
+    ].forEach((tile) => {
+      map.setCollision(tile, false, wallLayer);
+    });
 
-    let ledge1 = this.platforms.create(400, 400, AssetName.ground);
-    ledge1.body.immovable = true;
+    wallLayer.resizeWorld();
+    this.wallLayer = wallLayer;
+    this.game.physics.arcade.enable(this.wallLayer);
+    this.wallLayer.body.collideWorldBounds = true;
 
-    let ledge2 = this.platforms.create(-150, 250, AssetName.ground);
-    ledge2.body.immovable = true;
+    // fill level
+    for (let x = 0; x < NB_X_TILES; x++) {
+      for (let y = 0; y < NB_Y_TILES; y++) {
+        let tileNumber = TileLevel.FLOOR_MIDDLE;
+
+        if (y === 0) { // first line
+          if (x === 0) tileNumber = TileLevel.BORDER_TOP_LEFT_1;
+          else if (x === 1) tileNumber = TileLevel.BORDER_TOP_LEFT_2;
+          else if (x === NB_X_TILES - 1) tileNumber = TileLevel.BORDER_TOP_RIGHT_1;
+          else if (x === NB_X_TILES - 2) tileNumber = TileLevel.BORDER_TOP_RIGHT_2;
+          else if (x % 2 === 0) tileNumber = TileLevel.BORDER_TOP_EVEN;
+          else tileNumber = TileLevel.BORDER_TOP_OVEN;
+        }
+
+        else if (y === NB_Y_TILES - 1) { // last line
+          if (x === 0) tileNumber = TileLevel.BORDER_BOTTOM_LEFT_1;
+          else if (x === 1) tileNumber = TileLevel.BORDER_BOTTOM_LEFT_2;
+          else if (x === NB_X_TILES - 1) tileNumber = TileLevel.BORDER_BOTTOM_RIGHT_2;
+          else if (x === NB_X_TILES - 2) tileNumber = TileLevel.BORDER_BOTTOM_RIGHT_1;
+          else if (x % 2 === 0) tileNumber = TileLevel.BORDER_BOTTOM_EVEN;
+          else tileNumber = TileLevel.BORDER_BOTTOM_OVEN;
+        }
+
+        else if (x === 0) { // first column
+          if (y % 2 === 0) tileNumber = TileLevel.BORDER_LEFT_EVEN_1;
+          else tileNumber = TileLevel.BORDER_LEFT_OVEN_1;
+        }
+
+        else if (x === 1) { // second column
+          if (y % 2 === 0) tileNumber = TileLevel.BORDER_LEFT_EVEN_2;
+          else tileNumber = TileLevel.BORDER_LEFT_OVEN_2;
+        }
+
+
+        else if (x === NB_X_TILES - 1) { // last column
+          if (y % 2 === 0) tileNumber = TileLevel.BORDER_RIGHT_EVEN_1;
+          else tileNumber = TileLevel.BORDER_RIGHT_OVEN_1;
+        }
+
+        else if (x === NB_X_TILES - 2) { // last before column
+          if (y % 2 === 0) tileNumber = TileLevel.BORDER_RIGHT_EVEN_2;
+          else tileNumber = TileLevel.BORDER_RIGHT_OVEN_2;
+        }
+
+
+        else if (y === 1) { // last before column
+          tileNumber = TileLevel.FLOOR_TOP;
+        }
+
+
+        else if (x > 2 && x < NB_X_TILES - 2 && x % 2 !== 0 && y % 2 === 0) { // building
+          tileNumber = TileLevel.BUILDING;
+        }
+
+        map.putTile(tileNumber, x, y, wallLayer);
+      }
+    }
   }
 
   protected setupBombs() {
@@ -67,12 +166,25 @@ export class Level {
 
   public update() {
     this.game.physics.arcade.collide(this.player.sprite, this.obstacles);
-    this.game.physics.arcade.collide(this.player.sprite, this.platforms);
+    this.game.physics.arcade.collide(this.player.sprite, this.wallLayer, () => {
+      let idle = this.player.idleDirectionFrame;
+      if ((idle === 4 || idle === 7)) {
+        this.player.sprite.y += 2;
+      }
+
+      else if ((idle === 10 || idle === 1)) {
+        this.player.sprite.x += 2;
+      }
+    });
+
     this.game.physics.arcade.collide(this.player.sprite, this.bombs);
     this.game.physics.arcade.overlap(this.player.sprite, this.explosions, this.playerDie, null, this);
     this.game.physics.arcade.overlap(this.explosions, this.bombs, this.explodeBomb, null, this);
     this.game.physics.arcade.overlap(this.explosions, this.obstacles, this.destroyObstacle, null, this);
     this.player.sprite.bringToTop();
+
+    this.game.debug.spriteInfo(this.player.sprite, 32, 32);
+
   }
 
   protected playerDie(player: Sprite, explosion: Sprite) {

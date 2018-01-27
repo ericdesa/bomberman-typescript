@@ -8,7 +8,7 @@ export class Player {
 
   public isAlive = true;
   public sprite: Sprite;
-  protected idleDirectionFrame = 1;
+  public idleDirectionFrame = 1;
   protected speed = 120;
 
   public bombs = 5;
@@ -20,7 +20,7 @@ export class Player {
   }
 
   protected setupSprite() {
-    this.sprite = this.game.add.sprite(32, this.game.world.height - 150, AssetName.player);
+    this.sprite = this.game.add.sprite(32 * 2, 0, AssetName.player);
   }
 
   protected setupPhysics() {

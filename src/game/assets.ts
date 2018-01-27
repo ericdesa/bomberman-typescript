@@ -14,7 +14,7 @@ export class Assets {
 
   public static preload(game: Game) {
     game.load.image(AssetName.sky, 'assets/sky.png');
-    game.load.image(AssetName.ground, 'assets/platform.png');
+    game.load.image(AssetName.ground, 'assets/ground.png');
     game.load.image(AssetName.star, 'assets/star.png');
     game.load.spritesheet(AssetName.player, 'assets/player.png', 35, 56);
     game.load.spritesheet(AssetName.bomb, 'assets/bomb.png', 34, 34);
