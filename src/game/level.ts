@@ -7,6 +7,8 @@ import { AssetName } from './assets';
 import { Bomb } from './bomb';
 import { Obstacle } from './obstacle';
 
+import { environment } from '../environments/environment';
+
 enum TileLevel {
   BORDER_TOP_LEFT_1 = 0,
   BORDER_TOP_LEFT_2,
@@ -63,7 +65,7 @@ export class Level {
     let map = this.game.add.tilemap();
     map.addTilesetImage(AssetName.ground);
     let wallLayer = map.create('walls', NB_X_TILES, NB_Y_TILES, TILE_SIZE, TILE_SIZE);
-    wallLayer.debug = false;
+    wallLayer.debug = environment.debug;
 
     // collisions
     map.setCollisionBetween(0, Object.keys(TileLevel).length, true, wallLayer);
@@ -196,7 +198,9 @@ export class Level {
     this.game.physics.arcade.overlap(this.explosions, this.obstacles, this.destroyObstacle, null, this);
     this.player.sprite.bringToTop();
 
-    this.game.debug.spriteInfo(this.player.sprite, 32, 32);
+    if (environment.debug) {
+      this.game.debug.spriteInfo(this.player.sprite, 32, 500);
+    }
 
   }
 
