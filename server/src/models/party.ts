@@ -15,7 +15,12 @@ export class Size {
 export class Party {
     public players: Player[] = [];
     public obstacles: Point[] = [];
+    public walls: Point[] = [];
     public size: Size = { w: 25, h: 19 };
+
+    constructor() {
+        this.setupObstacles();
+    }
 
     public addPlayer(socket: Socket): any {
         let slots = [
@@ -41,5 +46,22 @@ export class Party {
 
     public removePlayer(socketId: string): Player {
         return undefined;
+    }
+
+    public setupObstacles() {
+        for (let x = 2; x < this.size.w - 2; x++) {
+            for (let y = 1; y < this.size.h - 1; y++) {
+                if ((y % 2 === 0 && x % 2 === 0) || (y % 2 !== 0)) {
+                    if ((x > 3 || y > 2) &&
+                        (x < this.size.w - 4 || y < this.size.h - 3) &&
+                        (x > 3 || y < this.size.h - 3) &&
+                        (x < this.size.w - 4 || y > 2) &&
+                        (Math.random() < 0.4)
+                    ) {
+                        this.obstacles.push({ x: x, y: y });
+                    }
+                }
+            }
+        }
     }
 }

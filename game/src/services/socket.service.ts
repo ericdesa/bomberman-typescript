@@ -10,15 +10,6 @@ const SERVER_URL = 'http://localhost:8080';
 export class SocketService {
   private ioConnection;
 
-  constructor() {
-    this.initSocket();
-
-    this.ioConnection = this.onMessage()
-      .subscribe((message: string) => {
-        console.log('received:', message);
-      });
-  }
-
   public initSocket() {
     this.ioConnection = socketIo(SERVER_URL);
   }
@@ -27,15 +18,9 @@ export class SocketService {
     this.ioConnection.emit('message', message);
   }
 
-  public onMessage(): Observable<string> {
+  public onPartyInitialized(): Observable<string> {
     return new Observable<string>(observer => {
-      this.ioConnection.on('Party', (data: string) => observer.next(data));
-    });
-  }
-
-  public onEvent(event: Event): Observable<any> {
-    return new Observable<Event>(observer => {
-      this.ioConnection.on(event, () => observer.next());
+      this.ioConnection.on('Party', (data: any) => observer.next(data));
     });
   }
 }

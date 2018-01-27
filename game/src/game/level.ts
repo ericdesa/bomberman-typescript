@@ -8,6 +8,7 @@ import { Bomb } from './bomb';
 import { Obstacle } from './obstacle';
 
 import { environment } from '../environments/environment';
+import { SocketService } from '../services/socket.service';
 
 enum TileLevel {
   BORDER_TOP_LEFT_1 = 0,
@@ -39,22 +40,31 @@ enum TileLevel {
   BORDER_BOTTOM_RIGHT_2,
 }
 
-const NB_X_TILES = 25;
-const NB_Y_TILES = 19;
-const TILE_SIZE = 32;
 
 export class Level {
+
+  public NB_X_TILES = 25;
+  public NB_Y_TILES = 19;
+  public TILE_SIZE = 32;
 
   protected bombs: Group;
   protected obstacles: Group;
   protected explosions: Group;
   protected wallLayer: TilemapLayer;
 
-  constructor(protected game: Game, public player: Player, protected scoreService: ScoreService) {
+  constructor(
+    public game: Game,
+    public player: Player,
+    public scoreService: ScoreService,
+    public party: any) {
+
+    this.NB_X_TILES = party.size.w;
+    this.NB_Y_TILES = party.size.h;
+
     this.setupSky();
     this.setupWall();
     this.setupBombs();
-    this.setupObstacles();
+    this.setupObstacles(party.obstacles);
   }
 
   protected setupSky() {
@@ -64,7 +74,7 @@ export class Level {
   protected setupWall() {
     let map = this.game.add.tilemap();
     map.addTilesetImage(AssetName.ground);
-    let wallLayer = map.create('walls', NB_X_TILES, NB_Y_TILES, TILE_SIZE, TILE_SIZE);
+    let wallLayer = map.create('walls', this.NB_X_TILES, this.NB_Y_TILES, this.TILE_SIZE, this.TILE_SIZE);
     wallLayer.debug = environment.debug;
 
     // collisions
@@ -82,24 +92,24 @@ export class Level {
     this.wallLayer.body.collideWorldBounds = true;
 
     // fill level
-    for (let x = 0; x < NB_X_TILES; x++) {
-      for (let y = 0; y < NB_Y_TILES; y++) {
+    for (let x = 0; x < this.NB_X_TILES; x++) {
+      for (let y = 0; y < this.NB_Y_TILES; y++) {
         let tileNumber = TileLevel.FLOOR_MIDDLE;
 
         if (y === 0) { // first line
           if (x === 0) tileNumber = TileLevel.BORDER_TOP_LEFT_1;
           else if (x === 1) tileNumber = TileLevel.BORDER_TOP_LEFT_2;
-          else if (x === NB_X_TILES - 1) tileNumber = TileLevel.BORDER_TOP_RIGHT_1;
-          else if (x === NB_X_TILES - 2) tileNumber = TileLevel.BORDER_TOP_RIGHT_2;
+          else if (x === this.NB_X_TILES - 1) tileNumber = TileLevel.BORDER_TOP_RIGHT_1;
+          else if (x === this.NB_X_TILES - 2) tileNumber = TileLevel.BORDER_TOP_RIGHT_2;
           else if (x % 2 === 0) tileNumber = TileLevel.BORDER_TOP_EVEN;
           else tileNumber = TileLevel.BORDER_TOP_OVEN;
         }
 
-        else if (y === NB_Y_TILES - 1) { // last line
+        else if (y === this.NB_Y_TILES - 1) { // last line
           if (x === 0) tileNumber = TileLevel.BORDER_BOTTOM_LEFT_1;
           else if (x === 1) tileNumber = TileLevel.BORDER_BOTTOM_LEFT_2;
-          else if (x === NB_X_TILES - 1) tileNumber = TileLevel.BORDER_BOTTOM_RIGHT_2;
-          else if (x === NB_X_TILES - 2) tileNumber = TileLevel.BORDER_BOTTOM_RIGHT_1;
+          else if (x === this.NB_X_TILES - 1) tileNumber = TileLevel.BORDER_BOTTOM_RIGHT_2;
+          else if (x === this.NB_X_TILES - 2) tileNumber = TileLevel.BORDER_BOTTOM_RIGHT_1;
           else if (x % 2 === 0) tileNumber = TileLevel.BORDER_BOTTOM_EVEN;
           else tileNumber = TileLevel.BORDER_BOTTOM_OVEN;
         }
@@ -115,12 +125,12 @@ export class Level {
         }
 
 
-        else if (x === NB_X_TILES - 1) { // last column
+        else if (x === this.NB_X_TILES - 1) { // last column
           if (y % 2 === 0) tileNumber = TileLevel.BORDER_RIGHT_EVEN_1;
           else tileNumber = TileLevel.BORDER_RIGHT_OVEN_1;
         }
 
-        else if (x === NB_X_TILES - 2) { // last before column
+        else if (x === this.NB_X_TILES - 2) { // last before column
           if (y % 2 === 0) tileNumber = TileLevel.BORDER_RIGHT_EVEN_2;
           else tileNumber = TileLevel.BORDER_RIGHT_OVEN_2;
         }
@@ -131,7 +141,7 @@ export class Level {
         }
 
 
-        else if (x > 2 && x < NB_X_TILES - 2 && x % 2 !== 0 && y % 2 === 0) { // building
+        else if (x > 2 && x < this.NB_X_TILES - 2 && x % 2 !== 0 && y % 2 === 0) { // building
           tileNumber = TileLevel.BUILDING;
         }
 
@@ -148,26 +158,14 @@ export class Level {
     this.explosions.enableBody = true;
   }
 
-  protected setupObstacles() {
+  protected setupObstacles(obstacles: any) {
     this.obstacles = this.game.add.group();
     this.obstacles.enableBody = true;
 
-    for (let x = 2; x < NB_X_TILES - 2; x++) {
-      for (let y = 1; y < NB_Y_TILES - 1; y++) {
-
-        if ((y % 2 === 0 && x % 2 === 0) || (y % 2 !== 0)) {
-          if (
-            (x > 3 || y > 2) &&
-            (x < NB_X_TILES - 4 || y < NB_Y_TILES - 3) &&
-            (x > 3 || y < NB_Y_TILES - 3) &&
-            (x < NB_X_TILES - 4 || y > 2) &&
-            (Math.random() < 0.4)
-          ) {
-            let _ = new Obstacle(this.obstacles, x * TILE_SIZE, y * TILE_SIZE);
-          }
-        }
-      }
+    for (let ob of obstacles) {
+      let _ = new Obstacle(this.obstacles, ob.x * this.TILE_SIZE, ob.y * this.TILE_SIZE);
     }
+
   }
 
   public dropBomb() {

@@ -35,15 +35,21 @@ export class AppComponent {
 
   protected create() {
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
+    this.socketService.initSocket();
 
-    this.player = new Player(this.game);
-    this.level = new Level(this.game, this.player, this.scoreService);
-    this.controls = new Controls(this.game, this.level);
-    this.gui = new GUI(this.game, this.scoreService);
+    this.socketService.onPartyInitialized().subscribe((party) => {
+      this.player = new Player(this.game);
+      this.level = new Level(this.game, this.player, this.scoreService, party);
+      this.controls = new Controls(this.game, this.level);
+      this.gui = new GUI(this.game, this.scoreService);
+    });
+
   }
 
   protected update() {
-    this.level.update();
-    this.controls.update();
+    if (this.level) {
+      this.level.update();
+      this.controls.update();
+    }
   }
 }
