@@ -63,7 +63,7 @@ export class Level {
     let map = this.game.add.tilemap();
     map.addTilesetImage(AssetName.ground);
     let wallLayer = map.create('walls', NB_X_TILES, NB_Y_TILES, TILE_SIZE, TILE_SIZE);
-    wallLayer.debug = true;
+    wallLayer.debug = false;
 
     // collisions
     map.setCollisionBetween(0, Object.keys(TileLevel).length, true, wallLayer);
@@ -150,8 +150,21 @@ export class Level {
     this.obstacles = this.game.add.group();
     this.obstacles.enableBody = true;
 
-    for (let i = 0; i < 12; i++) {
-      let _ = new Obstacle(this.obstacles);
+    for (let x = 2; x < NB_X_TILES - 2; x++) {
+      for (let y = 1; y < NB_Y_TILES - 1; y++) {
+
+        if ((y % 2 === 0 && x % 2 === 0) || (y % 2 !== 0)) {
+          if (
+            (x > 3 || y > 2) &&
+            (x < NB_X_TILES - 4 || y < NB_Y_TILES - 3) &&
+            (x > 3 || y < NB_Y_TILES - 3) &&
+            (x < NB_X_TILES - 4 || y > 2) &&
+            (Math.random() < 0.4)
+          ) {
+            let _ = new Obstacle(this.obstacles, x * TILE_SIZE, y * TILE_SIZE);
+          }
+        }
+      }
     }
   }
 
