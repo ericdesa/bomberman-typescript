@@ -1,0 +1,74 @@
+{
+  "name": "bomberman-server",
+  "version": "0.0.1",
+  "description": "",
+  "repository": "",
+  "license": "MIT",
+  "scripts": {
+    "============================== Build =============================": "",
+    "------------------------------- Dev ------------------------------": "",
+    "start": "yarn nodemon",
+    "----------------------------- Release ----------------------------": "",
+    "build": "yarn clean && tsc && yarn swagger",
+    "clean": "rimraf dist",
+    "--------------------------- Environments -------------------------": "",
+    "setup:env:dev": "node tools/setup-environment.js --env dev",
+    "setup:env:prod": "node tools/setup-environment.js --env prod",
+    "============================== Utils =============================": "",
+    "--------------------------- Coding Style -------------------------": "",
+    "format": "tsfmt -r",
+    "------------------------------- Doc ------------------------------": "",
+    "doc": "typedoc --out ./doc/ --name 'Typescript-rest-Boilerplate' --readme ./README.MD --module commonjs --target ES6 --includeDeclarations --excludePrivate --excludeExternals ./src",
+    "swagger": "swaggerGen -c ./swagger.config.json",
+    "----------------------------- Docker -----------------------------": "",
+    "docker:build": "docker build -t ericdesa/bomberman-server .",
+    "============================== Tests =============================": "",
+    "test:coverage": "nyc yarn test",
+    "test": "mocha",
+    "pretest": "yarn build && yarn lint"
+  },
+  "dependencies": {
+    "@types/express": "^4.11.0",
+    "@types/socket.io": "^1.4.31",
+    "express": "^4.16.2",
+    "socket.io": "^2.0.4",
+    "typescript-rest": "^1.1.1",
+    "typescript-rest-swagger": "0.0.10"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.2",
+    "@types/cors": "^2.8.1",
+    "@types/mocha": "^2.2.41",
+    "@types/request": "0.0.43",
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.5.0",
+    "nodemon": "^1.14.7",
+    "nyc": "^10.3.2",
+    "request": "^2.81.0",
+    "rimraf": "^2.6.1",
+    "source-map-support": "^0.4.15",
+    "ts-node": "~3.0.6",
+    "tslint": "~5.4.3",
+    "typedoc": "^0.5.10",
+    "typescript": "~2.3.4",
+    "typescript-formatter": "^5.2.0"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
+  }
+}
